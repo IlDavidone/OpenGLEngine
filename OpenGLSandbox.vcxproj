@@ -181,6 +181,8 @@
     <Text Include="glsl\lightFragment.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="textures\cube.png" />
+    <Image Include="textures\cuber.jpg" />
     <Image Include="textures\Image.png" />
     <Image Include="textures\Screenshot_2024-12-04_233204_-_Copy.jpg" />
     <Image Include="textures\wall.jpg" />

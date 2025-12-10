@@ -134,5 +134,11 @@
     <Image Include="textures\Screenshot_2024-12-04_233204_-_Copy.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="textures\cube.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="textures\cuber.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
