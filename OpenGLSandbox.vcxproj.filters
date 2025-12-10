@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="glsl\fragments.txt" />
+    <Text Include="glsl\lightFragment.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\Image.png">

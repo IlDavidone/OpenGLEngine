@@ -134,6 +134,7 @@ int main() {
     glViewport(0, 0, pixel::width, pixel::height);
 
     Shader shaderProgram("glsl/vertices.txt", "glsl/fragments.txt");
+	Shader lightShader("glsl/vertices.txt", "glsl/lightFragment.txt");
 
     VAO VAO1;
     VAO1.Bind();
@@ -149,6 +150,15 @@ int main() {
     VAO1.Unbind();
     VBO1.Unbind();
 
+    VAO lightVAO;
+	lightVAO.Bind();
+
+	lightVAO.LinkAttributes(VBO1, 0, 3, GL_FLOAT, 5 * sizeof(GLfloat), (void*)0);
+
+	lightVAO.Unbind();
+
+    shaderProgram.Activate();
+
 	Texture texture("textures/Screenshot_2024-12-04_233204_-_Copy.jpg", LINEAR);
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -161,6 +171,8 @@ int main() {
 
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -180,8 +192,10 @@ int main() {
         glEnable(GL_DEPTH_TEST);
 
         shaderProgram.Activate();
-        texture.Bind();
-        glUniform1i(glGetUniformLocation(shaderProgram.ID, "texture1"), 0);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "objectColor"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightColor"), 1.0f, 1.0f, 1.0f);
+        //texture.Bind();
+        //glUniform1i(glGetUniformLocation(shaderProgram.ID, "texture1"), 0);
 
         int projectionLoc = glGetUniformLocation(shaderProgram.ID, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
@@ -203,6 +217,26 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+		lightShader.Activate();
+
+        projectionLoc = glGetUniformLocation(lightShader.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        view = camera.GetViewMatrix();
+        viewLoc = glGetUniformLocation(lightShader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+        modelLoc = glGetUniformLocation(lightShader.ID, "model");
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, glm::vec3(0.2f));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+        lightVAO.Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
         VAO1.Bind();
 
         ImGui::Render();
@@ -214,6 +248,7 @@ int main() {
 
     VAO1.Delete();
     VBO1.Delete();
+	lightVAO.Delete();
     EBO1.Delete();
     shaderProgram.Delete();
 
