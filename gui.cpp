@@ -4,6 +4,7 @@ void infoBox();
 void lightParametersGui();
 void createCubeGui();
 void sceneViewer();
+void cubePropertyGui(int selectedID);
 
 bool lightGuiOpen = true;
 glm::vec3 cubePosition;
@@ -156,6 +157,8 @@ void createCubeGui() {
 	ImGui::End();
 }
 
+static bool showPropertiesWindow = true;
+
 void sceneViewer() {
 	ImGui::Begin("Scene Viewer", NULL, ImGuiWindowFlags_NoCollapse);
 	int winWidth, winHeight;
@@ -190,12 +193,20 @@ void sceneViewer() {
 
 			ImGui::TreePop();
 		}
+
+		static int selectedCube = -1;
+
 		if (ImGui::TreeNode("Cubes"))
 		{
 			for (int i = 0; i < cubePositions->size(); i++)
 			{
 				ImGui::PushID(i);
 				ImGui::Text("Cube %d", i);
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Properties")) {
+					selectedCube = i;
+					showPropertiesWindow = true;
+				}
 				ImGui::SameLine();
 				if (ImGui::SmallButton("Delete")) {
 					cubePositions->erase(cubePositions->begin() + i);
@@ -206,30 +217,27 @@ void sceneViewer() {
 			ImGui::TreePop();
 		}
 		ImGui::TreePop();
+
+		if (selectedCube >= 0 && selectedCube < cubePositions->size()) {
+			cubePropertyGui(selectedCube);
+		}
 	}
 	ImGui::End();
 }
 
-void exitProgramPopup() {
-	ImGui::OpenPopup("Exit");
-
-	if (ImGui::BeginPopupModal("Exit", NULL))
+void cubePropertyGui(int selectedID) {
+	if (showPropertiesWindow)
 	{
-		ImGui::Text("Are you sure you want to exit?\nThis operation cannot be undone!");
-		ImGui::Separator();
+		char labelCube[32];
+		snprintf(labelCube, sizeof(labelCube), "Cube %d", (*cubePositions)[selectedID].ID);
+		ImGui::Begin(labelCube, &showPropertiesWindow);
+		int winWidth, winHeight;
+		glfwGetWindowSize(window, &winWidth, &winHeight);
+		ImGui::SetWindowSize(ImVec2(winWidth / 4, winHeight / 4), ImGuiCond_Once);
+		ImGui::SetWindowPos(ImVec2((winWidth / 2) - (ImGui::GetWindowWidth() / 2), 5), ImGuiCond_Once);
 
-		//static int unused_i = 0;
-		//ImGui::Combo("Combo", &unused_i, "Delete\0Delete harder\0");
+		ImGui::SliderFloat3(" Cube Position", (float*)&(*cubePositions)[selectedID].position, -1000.0f, 1000.0f);
 
-		static bool dont_ask_me_next_time = false;
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-		ImGui::Checkbox("Don't ask me next time", &dont_ask_me_next_time);
-		ImGui::PopStyleVar();
-
-		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-		ImGui::SetItemDefaultFocus();
-		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-		ImGui::EndPopup();
+		ImGui::End();
 	}
 }
