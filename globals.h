@@ -32,4 +32,13 @@ extern float currentFrame;
 
 extern float lightPosSpeed;
 
+extern struct lightProperties {
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	float shininess;
+};
+
+extern lightProperties lightProps;
+
 #endif

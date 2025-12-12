@@ -116,8 +116,13 @@ int main() {
         glUniform1i(glGetUniformLocation(shaderProgram.ID, "texture1"), 0);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "objectColor"), 1.0f, 1.0f, 1.0f);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightColor"), 1.0f, 1.0f, 1.0f);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "material.ambient"), lightProps.ambient.x, lightProps.ambient.y, lightProps.ambient.z);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), lightProps.diffuse.x, lightProps.diffuse.y, lightProps.diffuse.z);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "material.specular"), lightProps.specular.x, lightProps.specular.y, lightProps.specular.z);
+        glUniform1f(glGetUniformLocation(shaderProgram.ID, "material.shininess"), lightProps.shininess);
         texture.Bind();
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 
 
         int projectionLoc = glGetUniformLocation(shaderProgram.ID, "projection");
@@ -142,7 +147,10 @@ int main() {
 
 		lightShader.Activate();
 
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "viewPos"), camera.Position.x, camera.Position.y, camera.Position.z);
+        glUniform3f(glGetUniformLocation(lightShader.ID, "material.ambient"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(lightShader.ID, "material.diffuse"), 1.0f, 0.5f, 0.31f);
+        glUniform3f(glGetUniformLocation(lightShader.ID, "material.specular"), 0.5f, 0.5f, 0.5f);
+        glUniform1f(glGetUniformLocation(lightShader.ID, "material.shininess"), 32.0f);
 
         projectionLoc = glGetUniformLocation(lightShader.ID, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
@@ -219,9 +227,6 @@ void processInput(GLFWwindow* window)
 		!wireframeCounter ? wireframeCounter++ : wireframeCounter = 0;
 
 		Sleep(300); // Simple debouncing
-    }
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, true);
     }
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
         ImGuiIO& io = ImGui::GetIO();

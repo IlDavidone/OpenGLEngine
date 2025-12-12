@@ -5,4 +5,6 @@
 
 void showGui();
 
+void exitProgramPopup();
+
 #endif

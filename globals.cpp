@@ -86,3 +86,10 @@ float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f;
 
 float lightPosSpeed = 0.8f;
+
+lightProperties lightProps = {
+    glm::vec3(0.1f, 0.1f, 0.1f),
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    glm::vec3(0.5f, 0.5f, 0.5f),
+    32.0f
+};
