@@ -2,8 +2,10 @@
 
 void infoBox();
 void lightParametersGui();
+void createCubeGui();
 
 bool lightGuiOpen = true;
+glm::vec3 cubePosition;
 
 void showGui() {
 	ImGui::Begin("Parameters", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
@@ -37,6 +39,7 @@ void showGui() {
 	ImGui::Checkbox("Demo Window", &showDemoWindow);
 	ImGui::Text("ImGui Window size: %.1f", ImGui::GetWindowSize().x);
 	infoBox();
+	createCubeGui();
 
 	if (ImGui::BeginPopupModal("Exit", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar))
 	{
@@ -77,7 +80,7 @@ void infoBox() {
 ImGuiWindowFlags windowFlagsLightParams = 0;
 
 void lightParametersGui() {
-	ImGui::Begin("Light Parameters", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar | windowFlagsLightParams);
+	ImGui::Begin("Light Properties", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar | windowFlagsLightParams);
 
 	static bool docked = false;
 	if (ImGui::BeginMenuBar())
@@ -98,7 +101,7 @@ void lightParametersGui() {
 	}
 	int winWidth, winHeight;
 	glfwGetWindowSize(window, &winWidth, &winHeight);
-	ImGui::SetWindowSize(ImVec2(winWidth / 4, winHeight / 3), ImGuiCond_Once);
+	ImGui::SetWindowSize(ImVec2(winWidth / 3, winHeight / 3), ImGuiCond_Once);
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
 	if (ImGui::CollapsingHeader("Light Position", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
@@ -117,6 +120,21 @@ void lightParametersGui() {
 		ImGui::SliderFloat(" Material Shininess", (float*)&lightProps.shininess, 0.0f, 256.0f);
 	}
 
+	ImGui::End();
+}
+
+void createCubeGui() {
+	ImGui::Begin("Create Cube", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+	int winWidth, winHeight;
+	glfwGetWindowSize(window, &winWidth, &winHeight);
+	ImGui::SetWindowSize(ImVec2(winWidth / 4, winHeight / 4), ImGuiCond_Always);
+	ImGui::SetWindowPos(ImVec2(10, 5), ImGuiCond_Always);
+	ImGui::SliderFloat3("Cube Position", (float*)&cubePosition, -20.0f, 20.0f);
+	if (ImGui::Button("Create Cube")) {
+		std::unique_ptr<Cube> cube = std::make_unique<Cube>(cubePositions.size(), 0.0f, cubePosition);
+		cubePositions.push_back(*cube);
+	}
+	ImGui::Text("Total Cubes: %d", (int)cubePositions.size());
 	ImGui::End();
 }
 

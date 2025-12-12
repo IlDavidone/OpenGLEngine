@@ -8,12 +8,26 @@ namespace pixel {
 	constexpr uint16_t height{ 864 };
 }
 
+class Cube {
+	public:
+		GLuint ID;
+		float rotationAngle;
+		glm::vec3 position;
+		
+		Cube(GLuint ID, float rotationAngle, glm::vec3 position) : ID(ID), rotationAngle(rotationAngle), position(position) {}
+
+		void draw(Shader& shader);
+		void scaleCube(float scaleFactor);
+		void positionCube(glm::vec3 newPosition);
+		void rotateCube(float angle);
+};
+
 extern GLFWwindow* window;
 
 extern float vertices[];
 extern unsigned int verticesSize;
 
-extern glm::vec3 cubePositions[];
+extern std::vector<Cube> cubePositions;
 
 extern int framePerSeconds;
 

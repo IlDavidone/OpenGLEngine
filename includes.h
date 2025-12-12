@@ -6,6 +6,11 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cstdint>
+#include <vector>
+#include <memory>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -19,8 +24,5 @@
 #include "stb_image.h"
 #include "globals.h"
 #include "gui.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #endif
