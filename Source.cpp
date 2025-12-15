@@ -52,6 +52,8 @@ int main() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
+    Assimp::Importer importer;
+
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
@@ -91,7 +93,15 @@ int main() {
 
     shaderProgram.Activate();
 
-	Texture texture("textures/cuber.jpg", LINEAR);
+    //Model myModel("models/backpack/backpack.obj");
+    Model myModel("models/sketchfab.fbx");
+	Texture texture("textures/rei.jpg", LINEAR);
+    Texture diffuseTexture("textures/Screenshot_2024-12-04_233204_-_Copy.jpg", LINEAR);
+    Texture specularTexture("textures/container_specular.jpg", LINEAR);
+
+    unsigned int diffuseMap = diffuseTexture.ID;
+    unsigned int specularMap = specularTexture.ID;  
+
 
     while (!glfwWindowShouldClose(window))
     {
@@ -115,22 +125,28 @@ int main() {
         glEnable(GL_DEPTH_TEST);
 
         shaderProgram.Activate();
-        glUniform1i(glGetUniformLocation(shaderProgram.ID, "texture1"), 0);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "objectColor"), 1.0f, 1.0f, 1.0f);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightColor"), 1.0f, 1.0f, 1.0f);
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "material.ambient"), lightProps.ambient.x, lightProps.ambient.y, lightProps.ambient.z);
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), lightProps.diffuse.x, lightProps.diffuse.y, lightProps.diffuse.z);
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "material.specular"), lightProps.specular.x, lightProps.specular.y, lightProps.specular.z);
+        glActiveTexture(GL_TEXTURE0);
+        diffuseTexture.Bind();
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), 0);
+        glActiveTexture(GL_TEXTURE1);
+        specularTexture.Bind();
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.specular"), 1);
         glUniform1f(glGetUniformLocation(shaderProgram.ID, "material.shininess"), lightProps.shininess);
-        texture.Bind();
 
         //directional light
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "dirLight.ambient"), 0.05f, 0.05f, 0.05f);
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "dirLight.diffuse"), 0.4f, 0.4f, 0.4f);
+        glUniform3f(glGetUniformLocation(shaderProgram.ID, "dirLight.diffuse"), 0.8f, 0.8f, 0.8f);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "dirLight.specular"), 0.5f, 0.5f, 0.5f);
 
         //point lights
+        #define MAX_POINT_LIGHTS 1024
+
+        int lightCount = std::min((int)pointLightPositions.size(), MAX_POINT_LIGHTS);
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "nrPointLights"), lightCount);
+
         for (int i{ 0 }; i < pointLightPositions.size(); i++) {
             std::string uniformPositionName =
                 "pointLights[" + std::to_string(i) + "].position";
@@ -180,9 +196,17 @@ int main() {
 
         int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
 
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        myModel.Draw(shaderProgram);
+
         for (int i{ 0 }; i < cubePositions->size(); i++) {
-            (*cubePositions)[i].draw(shaderProgram);
+            (*cubePositions)[i].draw(shaderProgram, VAO1);
         }
+
+        //myModel.Draw(shaderProgram);
 
 		lightShader.Activate();
 

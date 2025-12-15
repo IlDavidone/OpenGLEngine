@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="glsl\vertices.txt" />
+    <None Include="models\reiplush3.blend" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shaderClass.h">
