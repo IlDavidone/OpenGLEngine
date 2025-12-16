@@ -27,16 +27,28 @@ extern GLFWwindow* window;
 extern float vertices[];
 extern unsigned int verticesSize;
 
-
+#define MAX_BONE_INFLUENCE 4
 
 extern struct Vertex {
+	// position
 	glm::vec3 Position;
+	// normal
 	glm::vec3 Normal;
+	// texCoords
 	glm::vec2 TexCoords;
+	// tangent
+	glm::vec3 Tangent;
+	// bitangent
+	glm::vec3 Bitangent;
+	//bone indexes which will influence this vertex
+	int m_BoneIDs[MAX_BONE_INFLUENCE];
+	//weights from each bone
+	float m_Weights[MAX_BONE_INFLUENCE];
 };
 
 extern struct Textures {
 	unsigned int id;
+	std::string type;
 	std::string path;
 };
 
@@ -65,19 +77,18 @@ public:
 	void Draw(Shader& shader);
 private:
 	// model data
+	std::vector<Textures> textures_loaded;
 	std::vector<Mesh> meshes;
 	std::string directory;
 
-	void loadModel(std::string path);
+	void loadModel(std::string const& path);
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene, const char* texturePath);
-	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type,
+	std::vector<Textures> loadMaterialTextures(aiMaterial* mat, aiTextureType type,
 		std::string typeName);
 };
 
-Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-
-
+extern unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma);
 
 extern std::unique_ptr<std::vector<Cube>> cubePositions;
 

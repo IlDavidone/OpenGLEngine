@@ -3,7 +3,7 @@
 
 #include "includes.h"
 
-void showGui();
+void showGui(unsigned int textureID);
 
 void exitProgramPopup();
 

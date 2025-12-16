@@ -22,7 +22,7 @@ float lastY = pixel::height / 2.0f;
 bool firstMouse = true;
 
 int main() {
-    stbi_set_flip_vertically_on_load(1);
+    stbi_set_flip_vertically_on_load(true);
     
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -93,9 +93,11 @@ int main() {
 
     shaderProgram.Activate();
 
-    //Model myModel("models/backpack/backpack.obj");
-    Model myModel("models/sketchfab.fbx");
-	Texture texture("textures/rei.jpg", LINEAR);
+    stbi_set_flip_vertically_on_load(false);
+    Model myModel("models/backpack/backpack.obj");
+    stbi_set_flip_vertically_on_load(true);
+    Model rei("models/sketchfab.fbx");
+	Texture texture("textures/rei2.jpg", LINEAR);
     Texture diffuseTexture("textures/Screenshot_2024-12-04_233204_-_Copy.jpg", LINEAR);
     Texture specularTexture("textures/container_specular.jpg", LINEAR);
 
@@ -118,7 +120,7 @@ int main() {
         if (showDemoWindow)
             ImGui::ShowDemoWindow(&showDemoWindow);
 
-        showGui();
+        showGui(texture.ID);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -127,12 +129,25 @@ int main() {
         shaderProgram.Activate();
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "objectColor"), 1.0f, 1.0f, 1.0f);
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightColor"), 1.0f, 1.0f, 1.0f);
+
+        glActiveTexture(GL_TEXTURE0);
+        texture.Bind();
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), 0);
+
+        glUniform1i(
+            glGetUniformLocation(shaderProgram.ID, "material.useSpecular"),
+            0
+        );
+
+        /*
         glActiveTexture(GL_TEXTURE0);
         diffuseTexture.Bind();
         glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), 0);
         glActiveTexture(GL_TEXTURE1);
         specularTexture.Bind();
         glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.specular"), 1);
+        */
+
         glUniform1f(glGetUniformLocation(shaderProgram.ID, "material.shininess"), lightProps.shininess);
 
         //directional light
@@ -201,6 +216,10 @@ int main() {
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
         myModel.Draw(shaderProgram);
+
+        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        rei.Draw(shaderProgram);
 
         for (int i{ 0 }; i < cubePositions->size(); i++) {
             (*cubePositions)[i].draw(shaderProgram, VAO1);

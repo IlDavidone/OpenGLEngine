@@ -9,7 +9,7 @@ void cubePropertyGui(int selectedID);
 bool lightGuiOpen = true;
 glm::vec3 cubePosition;
 
-void showGui() {
+void showGui(unsigned int textureID) {
 	ImGui::Begin("Parameters", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -26,7 +26,7 @@ void showGui() {
 	ImGui::SetWindowSize(ImVec2(winWidth / 4, winHeight / 4), ImGuiCond_Always);
 	ImGui::SetWindowPos(ImVec2(winWidth - ImGui::GetWindowSize().x - 10, 5), ImGuiCond_Always);
 
-	ImGui::Text("Test (To be replaced)");
+	ImGui::Text("%i", (const char*)&textureID);
 
 	ImGui::SliderFloat("Light Bulb Speed", &lightPosSpeed, -2.0f, 2.0f);
 	ImGui::Checkbox("Moving Light Bulb (Z-Axis)", &movingLightBulb);
