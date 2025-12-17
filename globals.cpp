@@ -52,6 +52,20 @@ float vertices[] = {
 
 unsigned int verticesSize = sizeof(vertices);
 
+float TCR{ 4.0f }; //texCoords repeat
+
+float planeVertices[] = {
+    -0.5f, 0.0f, -0.5f,     0.0f, 0.0f,     0.0f, 1.0f, 0.0f,
+     0.5f, 0.0f, -0.5f,     4.0f, 0.0f,     0.0f, 1.0f, 0.0f,
+     0.5f, 0.0f,  0.5f,     4.0f, 4.0f,     0.0f, 1.0f, 0.0f,
+
+     0.5f, 0.0f,  0.5f,     4.0f, 4.0f,     0.0f, 1.0f, 0.0f,
+    -0.5f, 0.0f,  0.5f,     0.0f, 4.0f,     0.0f, 1.0f, 0.0f,
+    -0.5f, 0.0f, -0.5f,     0.0f, 0.0f,     0.0f, 1.0f, 0.0f
+};
+
+unsigned int planeVerticesSize = sizeof(planeVertices);
+
 void Cube::draw(Shader& shader, VAO vao) {
     vao.Bind();
 

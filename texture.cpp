@@ -22,6 +22,7 @@ Texture::Texture(const char* imagePath, TextureFilter filterType)
     // Wrapping (important for completeness)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);

@@ -27,6 +27,9 @@ extern GLFWwindow* window;
 extern float vertices[];
 extern unsigned int verticesSize;
 
+extern float planeVertices[];
+extern unsigned int planeVerticesSize;
+
 #define MAX_BONE_INFLUENCE 4
 
 extern struct Vertex {

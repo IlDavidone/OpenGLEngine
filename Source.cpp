@@ -5,6 +5,11 @@ unsigned int indices[] = {
         1, 2, 3  // second triangle
 };
 
+unsigned int planeIndices[] = {
+    0, 1, 2,
+    0, 2, 3
+};
+
 float texCoords[] = {
     0.0f, 0.0f,  
     1.0f, 0.0f,  
@@ -29,7 +34,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(pixel::width, pixel::height, "GL Engine (0_0_01)", NULL, NULL);
+    window = glfwCreateWindow(pixel::width, pixel::height, "Left Engine A_0.0.02", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -71,18 +76,25 @@ int main() {
 
     VAO VAO1;
     VAO1.Bind();
-
     VBO VBO1(vertices, verticesSize);
-
 	EBO EBO1(indices, sizeof(indices));
-
     VAO1.LinkAttributes(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)0);                  // position
     VAO1.LinkAttributes(VBO1, 1, 2, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))); // texcoord
     VAO1.LinkAttributes(VBO1, 2, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat))); // normal
-
-
     VAO1.Unbind();
     VBO1.Unbind();
+    EBO1.Unbind();
+
+    VAO planeVAO;
+    planeVAO.Bind();
+    VBO planeVBO(planeVertices, planeVerticesSize);
+    EBO planeEBO(planeIndices, sizeof(planeIndices));
+    planeVAO.LinkAttributes(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)0);                  // position
+    planeVAO.LinkAttributes(VBO1, 1, 2, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))); // texcoord
+    planeVAO.LinkAttributes(VBO1, 2, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat))); // normal
+    planeVAO.Unbind();
+    planeVBO.Unbind();
+    planeEBO.Unbind();
 
     VAO lightVAO;
 	lightVAO.Bind();
@@ -98,7 +110,7 @@ int main() {
     stbi_set_flip_vertically_on_load(true);
     Model rei("models/sketchfab.fbx");
 	Texture texture("textures/rei2.jpg", LINEAR);
-    Texture diffuseTexture("textures/Screenshot_2024-12-04_233204_-_Copy.jpg", LINEAR);
+    Texture diffuseTexture("textures/wall.jpg", LINEAR);
     Texture specularTexture("textures/container_specular.jpg", LINEAR);
 
     unsigned int diffuseMap = diffuseTexture.ID;
@@ -224,6 +236,23 @@ int main() {
         for (int i{ 0 }; i < cubePositions->size(); i++) {
             (*cubePositions)[i].draw(shaderProgram, VAO1);
         }
+
+        glActiveTexture(GL_TEXTURE1);
+        diffuseTexture.Bind();
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), 1);
+
+        glUniform1i(
+            glGetUniformLocation(shaderProgram.ID, "material.useSpecular"),
+            0
+        );
+        planeVAO.Bind();
+        model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(100.0f, 1.0f, 100.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1, 0, 0));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1f(glGetUniformLocation(shaderProgram.ID, "uvScale"), 4.0f);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        planeVAO.Unbind();
 
         //myModel.Draw(shaderProgram);
 
