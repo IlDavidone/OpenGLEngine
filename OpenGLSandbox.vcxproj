@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Sidav\Desktop\glfw-3.4\include;C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Sidav\Desktop\glfw-3.4\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;C:\Users\Sidav\source\repos\OpenGLSandbox\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Sidav\source\repos\OpenGLSandbox\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\Sidav\Desktop\glfw-3.4\include;C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Sidav\Desktop\glfw-3.4\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;C:\Users\Sidav\source\repos\OpenGLSandbox\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Sidav\source\repos\OpenGLSandbox\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
