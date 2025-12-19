@@ -133,6 +133,9 @@
   <ItemGroup>
     <Text Include="glsl\fragments.txt" />
     <Text Include="glsl\lightFragment.txt" />
+    <Text Include="glsl\blendingFragment.txt" />
+    <Text Include="glsl\postprocessVertex.txt" />
+    <Text Include="glsl\postprocessFragment.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\Image.png">

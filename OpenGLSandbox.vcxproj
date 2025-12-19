@@ -186,8 +186,11 @@
     <ClInclude Include="shaderClass.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="glsl\blendingFragment.txt" />
     <Text Include="glsl\fragments.txt" />
     <Text Include="glsl\lightFragment.txt" />
+    <Text Include="glsl\postprocessFragment.txt" />
+    <Text Include="glsl\postprocessVertex.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\cube.png" />

@@ -16,6 +16,22 @@ float texCoords[] = {
     0.5f, 1.0f  
 };
 
+float framebufferVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+    // positions   // texCoords
+    -1.0f,  1.0f,  0.0f, 1.0f,
+    -1.0f, -1.0f,  0.0f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+
+    -1.0f,  1.0f,  0.0f, 1.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+     1.0f,  1.0f,  1.0f, 1.0f
+};
+
+std::vector<glm::vec3> windows {
+    glm::vec3(0.0f,  0.0f, 4.0f),
+    glm::vec3(1.5f,  0.0f,  0.51f)
+};
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -72,7 +88,43 @@ int main() {
     glViewport(0, 0, pixel::width, pixel::height);
 
     Shader shaderProgram("glsl/vertices.txt", "glsl/fragments.txt");
+	Shader blendShader("glsl/vertices.txt", "glsl/blendingFragment.txt");
 	Shader lightShader("glsl/vertices.txt", "glsl/lightFragment.txt");
+	Shader screenShader("glsl/postprocessVertex.txt", "glsl/postprocessFragment.txt");
+
+	screenShader.Activate();
+    glUniform1i(glGetUniformLocation(screenShader.ID, "screenTexture"), 0);
+
+    unsigned int framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    unsigned int textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pixel::width, pixel::height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, pixel::width, pixel::height);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    VAO framebufferVAO;
+    framebufferVAO.Bind();
+    VBO framebufferVBO(framebufferVertices, sizeof(framebufferVertices));
+    framebufferVAO.LinkAttributes(framebufferVBO, 0, 2, GL_FLOAT, 4 * sizeof(GLfloat), (void*)0);                  // position
+    framebufferVAO.LinkAttributes(framebufferVBO, 1, 2, GL_FLOAT, 4 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat))); // texcoord
+    framebufferVAO.Unbind();
+    framebufferVBO.Unbind();
 
     VAO VAO1;
     VAO1.Bind();
@@ -96,11 +148,20 @@ int main() {
     planeVBO.Unbind();
     planeEBO.Unbind();
 
+    VAO vegetationVAO;
+    vegetationVAO.Bind();
+    VBO vegetationVBO(planeVertices, planeVerticesSize);
+    EBO vegetationEBO(planeIndices, sizeof(planeIndices));
+    vegetationVAO.LinkAttributes(vegetationVBO, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)0);                  // position
+    vegetationVAO.LinkAttributes(vegetationVBO, 1, 2, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))); // texcoord
+    vegetationVAO.LinkAttributes(vegetationVBO, 2, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat))); // normal
+    vegetationVAO.Unbind();
+    vegetationVBO.Unbind();
+    vegetationEBO.Unbind();
+
     VAO lightVAO;
-	lightVAO.Bind();
-
-	lightVAO.LinkAttributes(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)0);
-
+    lightVAO.Bind();
+    lightVAO.LinkAttributes(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)0);
 	lightVAO.Unbind();
 
     shaderProgram.Activate();
@@ -111,6 +172,7 @@ int main() {
     Model rei("models/sketchfab.fbx");
 	Texture texture("textures/rei2.jpg", LINEAR);
     Texture diffuseTexture("textures/wall.jpg", LINEAR);
+	Texture grassTexture("textures/redwindow.png", LINEAR);
     Texture specularTexture("textures/container_specular.jpg", LINEAR);
 
     unsigned int diffuseMap = diffuseTexture.ID;
@@ -123,6 +185,16 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        std::map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < windows.size(); i++)
+        {
+            float distance = glm::length(camera.Position - windows[i]);
+            sorted[distance] = windows[i];
+        }
+
         processInput(window);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -134,6 +206,7 @@ int main() {
 
         showGui(texture.ID);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -237,18 +310,17 @@ int main() {
             (*cubePositions)[i].draw(shaderProgram, VAO1);
         }
 
-        glActiveTexture(GL_TEXTURE1);
-        diffuseTexture.Bind();
-        glUniform1i(glGetUniformLocation(shaderProgram.ID, "material.diffuse"), 1);
-
+		shaderProgram.Activate();
+        planeVAO.Bind();
+        glActiveTexture(GL_TEXTURE0);
+        diffuseTexture.Bind();   // or plane texture
         glUniform1i(
-            glGetUniformLocation(shaderProgram.ID, "material.useSpecular"),
+            glGetUniformLocation(shaderProgram.ID, "material.diffuse"),
             0
         );
-        planeVAO.Bind();
-        model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(100.0f, 1.0f, 100.0f));	// it's a bit too big for our scene, so scale it down
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1, 0, 0));
+        model = glm::mat4(1.0f);              
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(4.0f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glUniform1f(glGetUniformLocation(shaderProgram.ID, "uvScale"), 4.0f);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -283,12 +355,51 @@ int main() {
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
+		lightVAO.Unbind();
+
+        blendShader.Activate();
+        vegetationVAO.Bind();
+        glActiveTexture(GL_TEXTURE0);
+        grassTexture.Bind();
+        glUniform1i(glGetUniformLocation(blendShader.ID, "texture1"), 0);
+        glUniform1i(
+            glGetUniformLocation(blendShader.ID, "material.useSpecular"),
+            0
+        );
+
+        projectionLoc = glGetUniformLocation(blendShader.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        view = camera.GetViewMatrix();
+        viewLoc = glGetUniformLocation(blendShader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
+            glm::mat4 grassmodel = glm::mat4(1.0f);
+            grassmodel = glm::translate(grassmodel, it->second);
+            grassmodel = glm::rotate(grassmodel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(3.0f));
+            glUniformMatrix4fv(glGetUniformLocation(blendShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(grassmodel));
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        vegetationVAO.Unbind();
+
         if (movingLightBulb) {
             lightPos.z -= lightPosSpeed * deltaTime;
         }
         framePerSeconds = 1000 / deltaTime;
 
-        VAO1.Bind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+		screenShader.Activate();
+        framebufferVAO.Bind();
+        glDisable(GL_DEPTH_TEST);
+		glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
