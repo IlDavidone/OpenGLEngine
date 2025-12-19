@@ -1,8 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <glad/glad.h>
-#include "stb_image.h"
+#include "includes.h"
 
 enum TextureFilter {
 	NEAREST,
@@ -14,6 +13,7 @@ public:
 	GLuint ID;
 
 	Texture(const char* imagePath, TextureFilter filterType);
+	Texture(std::vector<const char*> faces);
 
 	void Bind();
 };

@@ -32,6 +32,61 @@ std::vector<glm::vec3> windows {
     glm::vec3(1.5f,  0.0f,  0.51f)
 };
 
+std::vector<const char*> faces
+{
+    "textures/skybox/right.jpg",
+    "textures/skybox/left.jpg",
+    "textures/skybox/top.jpg",
+    "textures/skybox/bottom.jpg",
+    "textures/skybox/front.jpg",
+    "textures/skybox/back.jpg"
+};
+
+float skyboxVertices[] = {
+    // positions          
+    -1.0f,  1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+    -1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f
+};
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -91,6 +146,7 @@ int main() {
 	Shader blendShader("glsl/vertices.txt", "glsl/blendingFragment.txt");
 	Shader lightShader("glsl/vertices.txt", "glsl/lightFragment.txt");
 	Shader screenShader("glsl/postprocessVertex.txt", "glsl/postprocessFragment.txt");
+    Shader skyboxShader("glsl/skyboxVertex.txt", "glsl/skyboxFragment.txt");
 
 	screenShader.Activate();
     glUniform1i(glGetUniformLocation(screenShader.ID, "screenTexture"), 0);
@@ -174,6 +230,16 @@ int main() {
     Texture diffuseTexture("textures/wall.jpg", LINEAR);
 	Texture grassTexture("textures/redwindow.png", LINEAR);
     Texture specularTexture("textures/container_specular.jpg", LINEAR);
+    stbi_set_flip_vertically_on_load(false);
+    Texture cubemapTexture(faces);
+    stbi_set_flip_vertically_on_load(true);
+
+    VAO skyboxVAO;
+    skyboxVAO.Bind();
+    VBO skyboxVBO(skyboxVertices, sizeof(skyboxVertices));
+    skyboxVAO.LinkAttributes(skyboxVBO, 0, 3, GL_FLOAT, 3 * sizeof(GLfloat), (void*)0);                  // position
+    skyboxVAO.Unbind();
+    skyboxVBO.Unbind();
 
     unsigned int diffuseMap = diffuseTexture.ID;
     unsigned int specularMap = specularTexture.ID;  
@@ -195,6 +261,13 @@ int main() {
             sorted[distance] = windows[i];
         }
 
+        glm::mat4 projection = glm::perspective(
+            glm::radians(camera.Zoom),
+            (float)pixel::width / (float)pixel::height,
+            0.1f,
+            500.0f
+        );
+
         processInput(window);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -210,6 +283,8 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS); 
+        glDepthMask(GL_TRUE);
 
         shaderProgram.Activate();
         glUniform3f(glGetUniformLocation(shaderProgram.ID, "objectColor"), 1.0f, 1.0f, 1.0f);
@@ -357,6 +432,28 @@ int main() {
 
 		lightVAO.Unbind();
 
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        glm::mat4 skyboxView = glm::mat4(glm::mat3(view));
+
+        glDepthMask(GL_FALSE);
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.Activate();
+        glUniformMatrix4fv(
+            glGetUniformLocation(skyboxShader.ID, "view"),
+            1, GL_FALSE, glm::value_ptr(view)
+        );
+        glUniformMatrix4fv(
+            glGetUniformLocation(skyboxShader.ID, "projection"),
+            1, GL_FALSE, glm::value_ptr(projection)
+        );
+        skyboxVAO.Bind();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture.ID);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
+        skyboxVAO.Unbind();
+
         blendShader.Activate();
         vegetationVAO.Bind();
         glActiveTexture(GL_TEXTURE0);
@@ -379,7 +476,7 @@ int main() {
             glm::mat4 grassmodel = glm::mat4(1.0f);
             grassmodel = glm::translate(grassmodel, it->second);
             grassmodel = glm::rotate(grassmodel, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(3.0f));
+            model = glm::scale(grassmodel, glm::vec3(3.0f));
             glUniformMatrix4fv(glGetUniformLocation(blendShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(grassmodel));
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
