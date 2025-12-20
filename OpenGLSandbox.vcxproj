@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;C:\Users\Sidav\source\repos\OpenGLSandbox\includes;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Sidav\source\repos\OpenGLSandbox\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;C:\Users\Sidav\source\repos\OpenGLSandbox\includes;C:\Users\5A\source\repos\OpenGLEngine\imgui;C:\Users\5A\source\repos\OpenGLEngine\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Sidav\source\repos\OpenGLSandbox\lib;C:\Users\5A\source\repos\OpenGLEngine\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;C:\Users\Sidav\source\repos\OpenGLSandbox\includes;$(IncludePath)</IncludePath>
@@ -111,7 +111,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>-mwindows %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Sidav\source\repos\OpenGLSandbox\imgui;C:\Users\5A\source\repos\OpenGLEngine\includes;C:\Users\5A\source\repos\OpenGLEngine\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,7 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Videos\Desktop\glad.c" />
+    <ClCompile Include="glad.c" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
